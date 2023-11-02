@@ -26,6 +26,11 @@
             <artifactId>lombok</artifactId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.10.1</version>
+        </dependency>
 		<dependency>
 			<groupId>com.github.2captcha</groupId>
 			<artifactId>2captcha-java</artifactId>

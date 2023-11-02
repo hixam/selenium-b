@@ -1,5 +1,6 @@
 package com.example.demo;
 
+import com.google.gson.Gson;
 import com.twocaptcha.TwoCaptcha;
 import com.twocaptcha.captcha.ReCaptcha;
 import com.twocaptcha.exceptions.ApiException;
@@ -11,6 +12,8 @@ import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.devtools.v109.input.Input;
+import org.openqa.selenium.json.Json;
+import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.ui.ExpectedCondition;
@@ -21,10 +24,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.awt.*;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @RestController
 @Slf4j
@@ -98,27 +101,107 @@ public class Controller {
             "\t\t});\n" +
             "    }\n" +
             "});";
+    WebDriver driver;
+
+    @GetMapping("/BLS/PREMIUM")
+    public void BLSPREMIUN() throws InterruptedException, IOException, UnhandledAlertException {
+        System.setProperty("webdriver.chrome.driver", "chromedriver.exe");
+
+        File file = new File(
+                "C:\\Users\\hp\\Desktop\\BLS SPAIN\\DOMICILE\\users.txt");
+        BufferedReader br
+                = new BufferedReader(new FileReader(file));
+        String st;
+
+        ArrayList<String> myList = new ArrayList<>();
+        ArrayList<User> userList = new ArrayList<>();
+
+        while ((st = br.readLine()) != null) {
+            myList.add(st);
+        }
+
+        String r = "";
+        for (int i = 0; i < myList.size(); i++)
+            if (!myList.get(i).equals("*")) {
+                r += myList.get(i);
+            } else {
+                Gson gson = new Gson();
+                String json = "{" + r + "}";
+                User user = gson.fromJson(json, User.class);
+                userList.add(user);
+                r = "";
+            }
+
+        ChromeOptions chrome_options = new ChromeOptions();
+        // chrome_options.addArguments("--user-data-dir=C:/ChromeProfile/Profile1");
+        chrome_options.addArguments("--disable-blink-features=AutomationControlled");
+        // chrome_options.setExperimentalOption("excludeSwitches","enable-automation");
+        chrome_options.setExperimentalOption("useAutomationExtension", false);
+        DesiredCapabilities dc = new DesiredCapabilities();
+        dc.setCapability(CapabilityType.UNEXPECTED_ALERT_BEHAVIOUR, UnexpectedAlertBehaviour.IGNORE);
+        chrome_options.merge(dc);
+
+        driver = new ChromeDriver(chrome_options);
+        JavascriptExecutor js = (JavascriptExecutor) driver;
+        ((JavascriptExecutor) driver).executeScript("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})");
+
+        userList.forEach((user) -> {
+            driver.get("https://www.blsspainmorocco.net/MAR/bls/doorstepform");
+            Wait<WebDriver> wait = new WebDriverWait(driver, Duration.ofSeconds(60));
+
+            wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("btnVerify")));
+            wait.until(ExpectedConditions.elementToBeClickable(By.id("btnVerify")));
+
+            driver.findElement(By.id("FirstName")).sendKeys(user.getName());
+            driver.findElement(By.id("LastName")).sendKeys(user.getLastName());
+            driver.findElement(By.id("Email")).sendKeys(user.getEmail());
+            driver.findElement(By.id("Mobile")).sendKeys(user.getMobile());
+            driver.findElement(By.id("City")).sendKeys(user.getCity());
+            if (user.getLocation().equals("nador")) {
+                String loginScript = "document.getElementsByClassName(\"k-select\")[0].click();\n" +
+                        "document.getElementsByClassName(\"k-item\")[1].click();";
+                js.executeScript(loginScript);
+            }
+            wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("btnVerify")));
+            wait.until(ExpectedConditions.elementToBeClickable(By.id("btnVerify")));
+
+            try {
+                Thread.sleep(1500);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            driver.findElement(By.id("btnVerify")).click();
+
+
+            wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("btnSubmit")));
+            wait.until(ExpectedConditions.elementToBeClickable(By.id("btnSubmit")));
+
+            driver.findElement(By.id("btnSubmit")).click();
+
+
+            wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("upper-side")));
+        });
+    }
+
     @GetMapping("/BLS")
-public void BLS() throws InterruptedException {
+    public void BLS() throws InterruptedException {
         System.setProperty("webdriver.chrome.driver", "chromedriver.exe");
 
         var email = "hisami27@gmail.com";
         var pass = "Jaimepas12@";
         ChromeOptions chrome_options = new ChromeOptions();
-       // chrome_options.addArguments("--user-data-dir=C:/ChromeProfile/Profile1");
+        // chrome_options.addArguments("--user-data-dir=C:/ChromeProfile/Profile1");
         chrome_options.addArguments("--disable-blink-features=AutomationControlled");
-       // chrome_options.setExperimentalOption("excludeSwitches","enable-automation");
+        // chrome_options.setExperimentalOption("excludeSwitches","enable-automation");
         chrome_options.setExperimentalOption("useAutomationExtension", false);
-
 
 
         WebDriver driver = new ChromeDriver(chrome_options);
         JavascriptExecutor js = (JavascriptExecutor) driver;
         ((JavascriptExecutor) driver).executeScript("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})");
 
-        driver.get("https://api.zenrows.com/v1/?apikey=aaaa9121aaed4c4ea0d2138d7bf3110e2c501acc&url=https%3A%2F%2Fwww.blsspainmorocco.net%2FMAR%2FAccount%2FLogIn%3FReturnUrl%3D%252FMAR%252Fbls%252FVisaTypeVerification&premium_proxy=true&proxy_country=ma");
+        driver.get("https://www.blsspainmorocco.net/MAR/Account/LogIn?ReturnUrl=%2FMAR%2Fbls%2Fvisatypeverification");
         Wait<WebDriver> wait = new WebDriverWait(driver, Duration.ofSeconds(20));
-
 
 
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("btnVerify")));
@@ -147,7 +230,7 @@ public void BLS() throws InterruptedException {
         Thread.sleep(1400);
 
 
-        js.executeScript(secondPageScript);
+        //  js.executeScript(secondPageScript);
 
 
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("btnVerify")));
@@ -220,7 +303,7 @@ public void BLS() throws InterruptedException {
 
         //PART 2
         wait.until(ExpectedConditions.elementToBeClickable(By.id("mat-select-0")));
-Thread.sleep(3000);
+        Thread.sleep(3000);
 //        VISA CENTER
         driver.findElement(By.id("mat-select-0")).click();
 
@@ -230,7 +313,7 @@ Thread.sleep(3000);
         //driver.findElement(By.id("mat-option-1")).click();
 
 //        CATEGORY (No CLICK NEEDED)
-      //  driver.findElement(By.id("mat-select-2")).click();
+        //  driver.findElement(By.id("mat-select-2")).click();
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("mat-select-4")));
         wait.until(ExpectedConditions.elementToBeClickable(By.id("mat-select-4")));
         Thread.sleep(3000);
