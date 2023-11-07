@@ -10,6 +10,7 @@ import com.twocaptcha.exceptions.ValidationException;
 import lombok.extern.slf4j.Slf4j;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeDriverService;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.devtools.v109.input.Input;
 import org.openqa.selenium.json.Json;
@@ -105,7 +106,36 @@ public class Controller {
 
     @GetMapping("/BLS/PREMIUM")
     public void BLSPREMIUN() throws InterruptedException, IOException, UnhandledAlertException {
-        System.setProperty("webdriver.chrome.driver", "chromedriver.exe");
+
+//        String ProxyServer = "ma.smartproxy.com:40001:spdxyl9fv0:aoI1vfzq0ArgbWj89Y";
+//        int ProxyPort = 7000;
+//
+//        String sHttpProxy = ProxyServer + ":" + ProxyPort;
+//
+//        Proxy proxy = new Proxy();
+//
+//        proxy.setHttpProxy(sHttpProxy);
+//
+//        ChromeDriverService service = new ChromeDriverService.Builder()
+//                .usingDriverExecutable(new File("chromedriver.exe"))
+//                .usingAnyFreePort()
+//                .build();
+//        ChromeOptions options = new ChromeOptions();
+//
+//        options.setCapability("proxy", proxy);
+//
+//        options.merge(options);
+//
+//        driver= new ChromeDriver(service, options);
+
+
+
+
+
+
+
+
+       System.setProperty("webdriver.chrome.driver", "chromedriver.exe");
 
         File file = new File(
                 "C:\\Users\\hp\\Desktop\\BLS SPAIN\\DOMICILE\\users.txt");
@@ -187,8 +217,9 @@ public class Controller {
     public void BLS() throws InterruptedException {
         System.setProperty("webdriver.chrome.driver", "chromedriver.exe");
 
-        var email = "hisami27@gmail.com";
-        var pass = "Jaimepas12@";
+        var email = "sbounida@gmail.com";
+        var pass = "Bounida12@";
+
         ChromeOptions chrome_options = new ChromeOptions();
         // chrome_options.addArguments("--user-data-dir=C:/ChromeProfile/Profile1");
         chrome_options.addArguments("--disable-blink-features=AutomationControlled");
@@ -208,7 +239,11 @@ public class Controller {
         wait.until(ExpectedConditions.elementToBeClickable(By.id("btnVerify")));
 
         //LOGIN
-        String loginScript = "Array.from(document.getElementsByClassName(\"form-control entry-disabled\")).forEach((asd)=> (asd.id.toLowerCase().includes(\"password\")) ? asd.value = \"Bounida12@\" : asd.value = \"sbounida@gmail.com\");\n" +
+        String loginScript = "Array.from(document.getElementsByClassName(\"form-control entry-disabled\")).forEach((asd)=> (asd.id.toLowerCase().includes(\"password\")) ? asd.value = \"" +
+                pass +
+                "\" : asd.value = \"" +
+                email +
+                "\");\n" +
                 "\t\tdocument.getElementById(\"btnVerify\").click();";
         js.executeScript(loginScript);
 
@@ -227,10 +262,12 @@ public class Controller {
 
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("btnSubmit")));
         wait.until(ExpectedConditions.elementToBeClickable(By.id("btnSubmit")));
+
+        driver.findElement(By.id("btnSubmit")).click();
+
         Thread.sleep(1400);
 
-
-        //  js.executeScript(secondPageScript);
+        js.executeScript(secondPageScript);
 
 
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("btnVerify")));
@@ -285,8 +322,10 @@ public class Controller {
 //
 //        wait.until(d -> revealed.getText().equals("Captcha solved!"));
 
-        String jas = "___grecaptcha_cfg.clients[0].I.I.callback('" + captcha.getCode() + "')";
+        String jas = "___grecaptcha_cfg.clients[0].I?.I?.callback('" + captcha.getCode() + "')";
+        String jas2 = "___grecaptcha_cfg.clients[0].M?.M?.callback('" + captcha.getCode() + "')";
         js.executeScript(jas);
+        js.executeScript(jas2);
 
 
 //        var submit_btn = driver.findElement(By.cssSelector("button[type='submit']"));
